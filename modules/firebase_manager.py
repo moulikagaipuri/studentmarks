@@ -35,46 +35,58 @@ def initialize_firebase():
         
     cred = None
     
-    # 1. Try loading from Streamlit secrets (Production Cloud)
-    try:
-        if hasattr(st, "secrets"):
-            if "firebase" in st.secrets:
-                cred_dict = sanitize_credentials(dict(st.secrets["firebase"]))
-                cred = credentials.Certificate(cred_dict)
-            elif "FIREBASE_KEY" in st.secrets:
-                val = st.secrets["FIREBASE_KEY"]
-                try:
-                    cred_dict = json.loads(val)
-                except Exception:
-                    cred_dict = dict(val)
-                cred_dict = sanitize_credentials(cred_dict)
-                cred = credentials.Certificate(cred_dict)
-            else:
-                # Scan all secret keys to see if any value is a dictionary or JSON string with "type": "service_account"
-                for key in st.secrets.keys():
+    # 1. Try loading from local credential key file first (best for local execution)
+    if os.path.exists(KEY_PATH):
+        try:
+            # Local keys are already correctly formatted JSON files, but sanitize anyway for safety
+            with open(KEY_PATH, 'r') as f:
+                cred_dict = sanitize_credentials(json.load(f))
+            cred = credentials.Certificate(cred_dict)
+        except Exception as e:
+            firebase_error_msg = f"Local file failed: {e}"
+            print(f"Error loading Firebase local key file: {e}")
+
+    # 2. Try loading from Streamlit secrets (Production Cloud)
+    if not cred:
+        try:
+            if hasattr(st, "secrets"):
+                if "firebase" in st.secrets:
+                    cred_dict = sanitize_credentials(dict(st.secrets["firebase"]))
+                    cred = credentials.Certificate(cred_dict)
+                elif "FIREBASE_KEY" in st.secrets:
+                    val = st.secrets["FIREBASE_KEY"]
                     try:
-                        val = st.secrets[key]
-                        if isinstance(val, str):
-                            try:
-                                parsed = json.loads(val)
-                                if isinstance(parsed, dict) and parsed.get("type") == "service_account":
-                                    parsed = sanitize_credentials(parsed)
-                                    cred = credentials.Certificate(parsed)
-                                    break
-                            except Exception:
-                                pass
-                        elif hasattr(val, "get") or isinstance(val, dict):
-                            val_dict = sanitize_credentials(dict(val))
-                            if val_dict.get("type") == "service_account":
-                                cred = credentials.Certificate(val_dict)
-                                break
+                        cred_dict = json.loads(val)
                     except Exception:
-                        pass
-    except Exception as e:
-        firebase_error_msg = f"Secrets load failed: {e}"
-        print(f"Could not load Firebase from Streamlit secrets: {e}")
-        
-    # 2. Try loading from environment variable
+                        cred_dict = dict(val)
+                    cred_dict = sanitize_credentials(cred_dict)
+                    cred = credentials.Certificate(cred_dict)
+                else:
+                    # Scan all secret keys to see if any value is a dictionary or JSON string with "type": "service_account"
+                    for key in st.secrets.keys():
+                        try:
+                            val = st.secrets[key]
+                            if isinstance(val, str):
+                                try:
+                                    parsed = json.loads(val)
+                                    if isinstance(parsed, dict) and parsed.get("type") == "service_account":
+                                        parsed = sanitize_credentials(parsed)
+                                        cred = credentials.Certificate(parsed)
+                                        break
+                                except Exception:
+                                    pass
+                            elif hasattr(val, "get") or isinstance(val, dict):
+                                val_dict = sanitize_credentials(dict(val))
+                                if val_dict.get("type") == "service_account":
+                                    cred = credentials.Certificate(val_dict)
+                                    break
+                        except Exception:
+                            pass
+        except Exception as e:
+            firebase_error_msg = f"Secrets load failed: {e}"
+            print(f"Could not load Firebase from Streamlit secrets: {e}")
+            
+    # 3. Try loading from environment variable
     if not cred:
         try:
             env_key = os.environ.get("FIREBASE_KEY")
@@ -84,17 +96,6 @@ def initialize_firebase():
         except Exception as e:
             firebase_error_msg = f"Environment load failed: {e}"
             print(f"Could not load Firebase from environment variable: {e}")
-            
-    # 3. Fallback to local credential key file
-    if not cred and os.path.exists(KEY_PATH):
-        try:
-            # Local keys are already correctly formatted JSON files, but sanitize anyway for safety
-            with open(KEY_PATH, 'r') as f:
-                cred_dict = sanitize_credentials(json.load(f))
-            cred = credentials.Certificate(cred_dict)
-        except Exception as e:
-            firebase_error_msg = f"Local file failed: {e}"
-            print(f"Error loading Firebase local key file: {e}")
 
     if not cred and not firebase_error_msg:
         # Check if secrets.toml exists but has no keys
