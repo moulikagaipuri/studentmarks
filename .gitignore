@@ -1,0 +1,17 @@
+# Exclude sensitive Firebase service account key
+data/firebase-key.json
+
+# Exclude python cache directories
+__pycache__/
+*/__pycache__/
+*.py[cod]
+*$py.class
+
+# Exclude virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Streamlit configuration/secrets if any
+.streamlit/

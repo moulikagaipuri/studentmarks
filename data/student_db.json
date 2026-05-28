@@ -1,0 +1,54 @@
+[
+    {
+        "RollNo": "123",
+        "Name": "Test",
+        "Branch": "CSE",
+        "MobileNumber": "1",
+        "Email": "a",
+        "Subject": "Math",
+        "Mid1": "",
+        "Mid2": "",
+        "Average": "",
+        "Performance_Category": "Unassigned",
+        "CreatedBy": "faculty"
+    },
+    {
+        "RollNo": "22L31A5411",
+        "Name": "rahul",
+        "Branch": "CSE",
+        "MobileNumber": "9876542821",
+        "Email": "rahul@gmail.com",
+        "Subject": "dlco",
+        "Mid1": "",
+        "Mid2": "",
+        "Average": "",
+        "Performance_Category": "Unassigned",
+        "CreatedBy": "faculty"
+    },
+    {
+        "RollNo": "22L31A5411",
+        "Name": "rahul",
+        "Branch": "CSE",
+        "MobileNumber": "9876542821",
+        "Email": "rahul@gmail.com",
+        "Subject": "smds",
+        "Mid1": 25.0,
+        "Mid2": 2.0,
+        "Average": 20.4,
+        "Performance_Category": "High Performance",
+        "CreatedBy": "faculty"
+    },
+    {
+        "RollNo": "24L31A5411",
+        "Name": "rahul",
+        "Branch": "CSE",
+        "MobileNumber": "9876542711",
+        "Email": "rahul@gmail.com",
+        "Subject": "smds",
+        "Mid1": "",
+        "Mid2": "",
+        "Average": "",
+        "Performance_Category": "Unassigned",
+        "CreatedBy": "rahul"
+    }
+]
